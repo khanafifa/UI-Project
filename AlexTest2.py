@@ -133,6 +133,7 @@ class Toplevel1:
         self.Button2.configure(text='''Statistics''')
         self.Button2.bind('<Button-1>',lambda e:AlexTest2_support.summarize(e))
         self.ents = {}
+        self.ft = None # Buffer screen
 
     @staticmethod
     def popup1(event, *args, **kwargs):
