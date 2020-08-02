@@ -134,6 +134,19 @@ class Toplevel1:
         self.Button2.bind('<Button-1>',lambda e:AlexTest2_support.summarize(e))
         self.ents = {}
         self.ft = None # Buffer screen
+        
+        self.Button3 = tk.Button(self.Frame1)
+        self.Button3.place(relx=0.340, rely=0.021, height=24, width=87)
+        self.Button3.configure(activebackground="#ececec")
+        self.Button3.configure(activeforeground="#000000")
+        self.Button3.configure(background="#d9d9d9")
+        self.Button3.configure(disabledforeground="#a3a3a3")
+        self.Button3.configure(foreground="#000000")
+        self.Button3.configure(highlightbackground="#d9d9d9")
+        self.Button3.configure(highlightcolor="black")
+        self.Button3.configure(pady="0")
+        self.Button3.configure(text='''Export''')
+        self.Button3.bind('<Button-1>',lambda e:AlexTest2_support.exportSelect())
 
     @staticmethod
     def popup1(event, *args, **kwargs):

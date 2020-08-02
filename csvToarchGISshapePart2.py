@@ -90,20 +90,21 @@ def exportShapeFile(geo_data , frame,frame1):
     geo_gdf.to_file(filename =file_save, driver = 'ESRI Shapefile', crs_wkt = ESRI_WKT )
 
     print("Made it here!!")
-    frame.quit()
+    frame2.destroy();
+    frame3.destroy();
     
 def exportCSV(data,frame,frame1):
             frame1.destroy()
             file_save = filedialog.asksaveasfilename(initialdir = '/', filetypes = (("CSV files","*.csv"),("All Files","*.*")))
             data.to_csv(file_save+".csv")
-            frame.quit()
+            frame.destroy()
             
             
 def exportJSON(data,frame,frame1):
         frame1.destroy()
         file_save = filedialog.asksaveasfilename(initialdir = '/', filetypes = (('JSON files','*.json'),('All Files','*.*')))
         data.to_json(file_save+".json")
-        frame.quit()
+        frame.destroy()
 
 
 #root.propagate(0)
