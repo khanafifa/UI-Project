@@ -147,6 +147,20 @@ class Toplevel1:
         self.Button3.configure(pady="0")
         self.Button3.configure(text='''Export''')
         self.Button3.bind('<Button-1>',lambda e:AlexTest2_support.exportSelect())
+        
+        self.Button4 = tk.Button(self.Frame1)
+        self.Button4.place(relx=0.45, rely=0.021, height=24, width=87)
+        self.Button4.configure(activebackground="#ececec")
+        self.Button4.configure(activeforeground="#000000")
+        self.Button4.configure(background="#d9d9d9")
+        self.Button4.configure(disabledforeground="#a3a3a3")
+        self.Button4.configure(foreground="#000000")
+        self.Button4.configure(highlightbackground="#d9d9d9")
+        self.Button4.configure(highlightcolor="black")
+        self.Button4.configure(pady="0")
+        self.Button4.configure(text='''Graph''')
+        self.Button4.bind('<Button-1>',lambda e:AlexTest2_support.graphSelected())
+
 
     @staticmethod
     def popup1(event, *args, **kwargs):
