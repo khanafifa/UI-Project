@@ -539,5 +539,66 @@ def exportSelect():
 
     root2.mainloop()
     
+    
+def graphSelected():
+    print(w.data)
+    i = 0
+    r = tk.Tk()
+    frame1 = Frame(r,width=2000,height=1000)
+    frame1.pack(fill = "both", expand =1)
+    label=Label(frame1,text = "What colunm do you want to be the X value?")
+    label.pack(pady=5)
+    colnums=[]
+    clicked = StringVar()
+    while (i < (w.data.shape[1])): 
+        ##This while loops gets the amount of columns from the dataframe
+        colnums.append(i)
+        i+=1
+    clicked.set(colnums[0])
+    drop =OptionMenu(frame1, clicked,*colnums)
+    drop.pack(pady=5)
+    i=0
+    label2 = Label(frame1,text= "What rows do you want to use?")
+    label2.pack(pady=18)
+    listbox=Listbox(frame1,selectmode = "multiple")
+    listbox.pack(pady=18)
+    while (i < len(w.data)):
+        listbox.insert(END,i)
+        i+=1
+    label3 =Label(frame1,text="What column do you want to be the Y value?")
+    label3.pack(pady=20)
+    clicked2=StringVar()
+    clicked2.set(colnums[0])
+    drop2=OptionMenu(frame1,clicked2,*colnums)
+    drop2.pack()
+    button = Button(frame1,text="Plot Data") ## when button is pressed go to graph the data
+    button.bind("<Button-1>",plotData)
+    button.pack(pady =35)
+    r.mainloop()
+def plotData():
+    from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+    from matplotlib.figure import Figure
+    Xvalues=[]
+    Yvalues=[]
+    i=0
 
-
+    # clicked_items1= items ##Selected numbers from the listbox 
+    root = tk.Tk()
+    # for item in clicked_items1:
+    #     Xvalues.append(w.data.get_value(int(clicked_items1[i]),int(xselected),takeable = True))##grabs  selected from excel sheet
+    #     i+=1                                                                       ##clicked.get grabs the number that the user selected from OptionMenu 
+    # i=0
+    # for item2 in clicked_items1:
+    #     Yvalues.append(w.data.get_value(int(clicked_items1[i]),int(yselected),takeable= True))
+    #     i+=1
+    figure = Figure(figsize=(5,4),dpi=100)
+    
+    ##All the stuff below is makeing the graph and putting it in a window
+    # plot = figure.add_subplot(1,1,1)
+    # plot.bar(Xvalues,Yvalues)   ### puts the x/y values onto the graph
+    # # plot.set_ylabel(w.data.columns.values[int(yselected)])  ##labels y values for the graph
+    # # plot.set_xlabel(w.data.columns.values[int(xselected)])# labels x values for the graph
+    # canvas = FigureCanvasTkAgg(figure, root) ##puts the graph onto the window
+    # canvas.get_tk_widget().grid(row=0, column=0)
+    # figure.tight_layout()
+    # root.mainloop()
