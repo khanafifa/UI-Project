@@ -229,25 +229,29 @@ def showDataSize():
     w.ents[indx].grid(row=8, column=0)
     w.ents[indx].insert(tk.END, 'Entries = {}'.format(w.data.size))
 
+def closeWorkingMessage():
+    if w.ft != None:
+        w.ft.destroy()
+        w.ft = None
+        if w.thread_message:
+            tk.messagebox.showinfo("Information", w.thread_message)
+            w.thread_message = None
+
 def readCSV(p1, fname, sep, com, head):
     tic = time.perf_counter()
     w.data = pd.read_csv(fname, sep=sep, comment=com, header = head)
     toc = time.perf_counter()
     showDataSize()
-    if w.ft != None:
-        w.ft.destroy()
-        w.ft = None
-    tk.messagebox.showinfo("Information", 'Elapsed Time (seconds) {}'.format(toc - tic))
+    #closeWorkingMessage()
+    w.thread_message='Elapsed Time (seconds) {}'.format(toc - tic)
     
 def readExcel(p1, fname, sheets, cols, head, numrows):
     tic = time.perf_counter()
     w.data = pd.read_excel(fname, sheet_name=sheets, usecols=cols, nrows = numrows, header = head)
     toc = time.perf_counter()
     showDataSize()
-    if w.ft != None:
-        w.ft.destroy()
-        w.ft = None
-    tk.messagebox.showinfo("Information", 'Elapsed Time (seconds) {}'.format(toc - tic))
+    #closeWorkingMessage()
+    w.thread_message='Elapsed Time (seconds) {}'.format(toc - tic)
 
 def on_closing():
     return
@@ -255,13 +259,16 @@ def on_closing():
         root.destroy()
 
 def showWorking():
-    w.ft = tk.Toplevel()
-    w.ft.protocol("WM_DELETE_WINDOW", on_closing) 
+    w.ft = tk.Toplevel(w.Frame1)
+    w.ft.title('Work in progress, please be patient...')
+    w.ft.geometry("%dx%d%+d%+d" % (400, 50, 250, 125))
+    
     pb_hD = ttk.Progressbar(w.ft, orient='horizontal', mode='indeterminate')
     pb_hD.pack(expand=True, fill=tk.BOTH, side=tk.TOP)
     pb_hD.start(50)
+    w.ft.protocol("WM_DELETE_WINDOW", on_closing)
+    w.ft.grab_set()
     root.update()
-    
 
 def readButtonPressed(p1):
     MaxRows = 5
@@ -286,10 +293,13 @@ def readButtonPressed(p1):
         com = d.result[2] if d.result[2] else None
         head = d.result[3]
         fname = tk.filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("text files","*.csv"),("all files","*.*")))
-        try:
-            w.data = pd.read_csv(fname, sep=sep, comment=com, header=head, nrows=MaxRows)
-        except Exception as e:
-            tk.messagebox.showerror("Error", 'Exception {}'.format(e))
+        if fname:
+            try:
+                w.data = pd.read_csv(fname, sep=sep, comment=com, header=head, nrows=MaxRows)
+            except Exception as e:
+                tk.messagebox.showerror("Error", 'Exception {}'.format(e))
+                return
+        else:
             return
         
         previewTable(p1)
@@ -308,6 +318,7 @@ def readButtonPressed(p1):
         
         
         showWorking()
+        checkWorkingMessage()
         return
         
     elif d.result[0] == 2:
@@ -316,10 +327,13 @@ def readButtonPressed(p1):
         head = d.result[3]
         numrows = d.result[4]
         fname = tk.filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("excel files","*.xls"),("all files","*.*")))
-        try:
-            w.data = pd.read_excel(fname, sheet_name=sheets, usecols=cols, nrows = MaxRows, header = head)
-        except Exception as e:
-            tk.messagebox.showerror("Error", 'Exception {}'.format(e))
+        if fname:
+            try:
+                w.data = pd.read_excel(fname, sheet_name=sheets, usecols=cols, nrows = MaxRows, header = head)
+            except Exception as e:
+                tk.messagebox.showerror("Error", 'Exception {}'.format(e))
+                return
+        else:
             return
         
         previewTable(p1)
@@ -337,6 +351,7 @@ def readButtonPressed(p1):
         
         
         showWorking()
+        checkWorkingMessage()
         return
     
 
@@ -426,13 +441,28 @@ def get_columns_from(ent1,ent2,ret,frame,frame2,frame3):
     frame.quit()
     
 
+def checkWorkingMessage():
+    if w.thread.isAlive():
+        root.after(100, checkWorkingMessage)
+    else:
+        closeWorkingMessage()
+
+def exportShapeFileWorker(geo_gdf, fname):
+    tic = time.perf_counter()
+    ESRI_WKT = 'PROJCS["NAD83_HARN_New_Mexico_West",GEOGCS["GCS_NAD83(HARN)",DATUM["D_North_American_1983_HARN",SPHEROID["GRS_1980",6378137,298.257222101]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",31],PARAMETER["central_meridian",-107.8333333333333],PARAMETER["scale_factor",0.999916667],PARAMETER["false_easting",830000],PARAMETER["false_northing",0],UNIT["Meter",1]]'
+#needs to incorporate projection file. epsg code or WKT well known text code espg.io
+    geo_gdf.to_file(filename=fname, driver = 'ESRI Shapefile', crs_wkt = ESRI_WKT )
+    toc = time.perf_counter()
+    #closeWorkingMessage()
+    w.thread_message='File {} saved.\nElapsed Time (seconds) {}'.format(fname, toc - tic)
+
 def exportShapeFile(geo_data , frame,frame1,root2):
 #creates a geoDataFrome from the DataFrame. the column names are specific to SWNewMexico BHT Geothermal data. need to find a way to automate selecting columns
 #have the user select cross refference lookup table not all datasets will have headers so having set variables will be more secure
-    frame1.destroy()
+    #frame1.destroy()
     #frame.geometry("600x400")
     
-    geo_data.shape
+    frame.geometry("%dx%d%+d%+d" % (700, 800, 250, 125))
     frame2 = Frame(frame)
     #frame2.pack_propagate(False)
     frame2.pack()
@@ -483,32 +513,58 @@ def exportShapeFile(geo_data , frame,frame1,root2):
     #scale.pack(fill = "x")
     #geo_gdf.plot()
     
-    ESRI_WKT = 'PROJCS["NAD83_HARN_New_Mexico_West",GEOGCS["GCS_NAD83(HARN)",DATUM["D_North_American_1983_HARN",SPHEROID["GRS_1980",6378137,298.257222101]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",31],PARAMETER["central_meridian",-107.8333333333333],PARAMETER["scale_factor",0.999916667],PARAMETER["false_easting",830000],PARAMETER["false_northing",0],UNIT["Meter",1]]'
-#needs to incorporate projection file. epsg code or WKT well known text code espg.io
-    file_save = tk.filedialog.asksaveasfilename(initialdir = '/')
-    geo_gdf.to_file(filename =file_save, driver = 'ESRI Shapefile', crs_wkt = ESRI_WKT )
-    frame2.quit()
-    frame3.quit()
-    root2.quit()
-    print("Made it here!!")
     
+    file_save = tk.filedialog.asksaveasfilename(initialdir = '/')
+    w.thread = threading.Thread(target=exportShapeFileWorker, args=(geo_gdf, file_save))
+    w.thread.daemon = True # Allow the program to terminate without waiting for the thread to finish.
+   
+    #showWorking()
+    frame2.destroy()#quit()
+    frame3.destroy()#quit()
+    #root2.quit()
+    showWorking()
+    w.thread.start()
+    print("Made it here!!")
+    checkWorkingMessage()
+    
+    
+
+def exportCSVWorker(data, fname):
+    tic = time.perf_counter()
+    data.to_csv(fname)
+    toc = time.perf_counter()
+    #closeWorkingMessage()
+    w.thread_message='File {} saved.\nElapsed Time (seconds) {}'.format(fname, toc - tic)
     
 def exportCSV(data,frame,frame1,root2):
-            frame1.destroy()
-            file_save = filedialog.asksaveasfilename(initialdir = '/', filetypes = (("CSV files","*.csv"),("All Files","*.*")))
-            data.to_csv(file_save+".csv")
-            frame.quit()
-            root2.quit()
+    file_save = filedialog.asksaveasfilename(initialdir = '/', filetypes = (("CSV files","*.csv"),("All Files","*.*")))
+    w.thread = threading.Thread(target=exportCSVWorker, args=(data, file_save+".csv"))
+    w.thread.daemon = True # Allow the program to terminate without waiting for the thread to finish.
+    w.thread.start()
+    showWorking()
+    checkWorkingMessage()
+
+def exportJSONWorker(data, fname):
+    tic = time.perf_counter()
+    data.to_json(fname+".json")
+    toc = time.perf_counter()
+    #closeWorkingMessage()
+    w.thread_message = 'File {} saved.\nElapsed Time (seconds) {}'.format(fname+".json", toc - tic)
             
             
 def exportJSON(data,frame,frame1,root2):
-        frame1.destroy()
-        file_save = filedialog.asksaveasfilename(initialdir = '/', filetypes = (('JSON files','*.json'),('All Files','*.*')))
-        data.to_json(file_save+".json")
-        frame.quit()
-        root2.quit()
+    file_save = filedialog.asksaveasfilename(initialdir = '/', filetypes = (('JSON files','*.json'),('All Files','*.*')))
+    w.thread = threading.Thread(target=exportJSONWorker, args=(data, file_save))
+    w.thread.daemon = True # Allow the program to terminate without waiting for the thread to finish.
+    w.thread.start()
+    showWorking()
+    checkWorkingMessage()
+
         
 def exportSelect():
+    if type(w.data) == type(None) or w.data.size == 0:
+        tk.messagebox.showwarning("Warning", "Please import data before trying to export.")
+        return
    
     #asks user to select csv to convert
     #file_name = filedialog.askopenfilename(initialdir = "/", title = (("CSV files","*.csv"),("all files",".")))
@@ -518,26 +574,27 @@ def exportSelect():
     #geo_data = pd.read_csv(file_name)
     #print("file loaded all: ")
     # geo_data.shape
-    root2 = tk.Tk()
+    #root2 = tk.Tk()
+    w.data.columns = [str(i) for i in w.data.columns]
     geo_data = w.data;
-    root2.maxsize(width = 800,height=600)
+    #root2.maxsize(width = 800,height=600)
     #root.propagate(0)
-    frame = Frame(root2,width=800, height=600)
+    frame = tk.Toplevel(root,width=800, height=600)
     #frame.pack_propagate(0)
-    frame.pack()
+    #frame.pack()
     frame1 = Frame(frame,width=600,height=400)
     frame1.pack()
+    frame.geometry("%dx%d%+d%+d" % (400, 200, 250, 125))
 
-    btn = tk.Button(frame1, text = 'Export shapefile', command = lambda : exportShapeFile(geo_data,frame,frame1,root2)) 
+    btn = tk.Button(frame1, text = 'Export shapefile', command = lambda : exportShapeFile(geo_data,frame,frame1,root)) 
     btn.pack(side = TOP, pady = 20)
 
-    btn2 = tk.Button(frame1, text = 'Export CSV', command = lambda : exportCSV(geo_data,frame,frame1,root2)) 
+    btn2 = tk.Button(frame1, text = 'Export CSV', command = lambda : exportCSV(geo_data,frame,frame1,root)) 
     btn2.pack(side = RIGHT, pady = 20)
 
-    btn3 = tk.Button(frame1, text = 'Export JSON', command = lambda : exportJSON(geo_data,frame,frame1,root2)) 
+    btn3 = tk.Button(frame1, text = 'Export JSON', command = lambda : exportJSON(geo_data,frame,frame1,root)) 
     btn3.pack(side = BOTTOM, pady = 20)
 
-    root2.mainloop()
     
     
 def graphSelected():
@@ -575,6 +632,7 @@ def graphSelected():
     button.bind("<Button-1>",plotData)
     button.pack(pady =35)
     r.mainloop()
+
 def plotData():
     from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
     from matplotlib.figure import Figure

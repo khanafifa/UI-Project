@@ -134,6 +134,8 @@ class Toplevel1:
         self.Button2.bind('<Button-1>',lambda e:AlexTest2_support.summarize(e))
         self.ents = {}
         self.ft = None # Buffer screen
+        self.data = None
+        self.thread_message = None
         
         self.Button3 = tk.Button(self.Frame1)
         self.Button3.place(relx=0.340, rely=0.021, height=24, width=87)
