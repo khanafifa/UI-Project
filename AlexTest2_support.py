@@ -660,3 +660,40 @@ def plotData():
     # canvas.get_tk_widget().grid(row=0, column=0)
     # figure.tight_layout()
     # root.mainloop()
+
+
+
+def aboutButtonPressed(p1):
+    aboutTop = tk.Toplevel(root,width=800, height=600)
+    #frame.pack_propagate(0)
+    #frame.pack()
+    frame1 = Frame(aboutTop,width=600,height=400)
+    frame1.pack()
+    aboutTop.geometry("%dx%d%+d%+d" % (800, 800, 250, 125))
+    lbl1 = tk.Label(frame1, text="Created by Team Hydra 2020\nMany heads, one team!\nHeads as of August 2020\n"
+                    "Alexander Downey\n"
+                    "Mark Dziuk\n"
+                    "Afifa Khan\n"
+                    "Francisco Perez\n"
+                    )
+    lbl1.grid(row=0, sticky=tk.N)
+    #img = tk.PhotoImage(data=open('HYDRA.png', encoding='ANSI').read(), format='png')
+    img = tk.PhotoImage(file='HYDRA.png', format='png')
+    lblImg = tk.Label(frame1, compound='top')
+    lblImg['text'] = "HYDRA.png"
+    lblImg['image'] = img
+    lblImg.image = img
+    lblImg.grid(row=10, sticky=tk.W)
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
