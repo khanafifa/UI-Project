@@ -10,6 +10,8 @@ import numpy as np
 import pandas as pd
 #needed for the arcGIS shapefile
 import geopandas as gpd
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from sklearn.cluster import KMeans
 
 from tkinter import *
 
@@ -380,57 +382,196 @@ def destroy_window():
 if __name__ == '__main__':
     import AlexTest2
     AlexTest2.vp_start_gui()
-
+    
+#function use : calculate the statistics 
 def summarize(p1):
-    inner_frame = w.Scrolledwindow1_f
-    print('AlexTest2_support.readButtonPressed', type(p1))
-    sys.stdout.flush()
-    wid = p1.widget
-    tl = wid.nametowidget(wid.winfo_parent())
-    #tf = tl.nametowidget('TFrame1')
-    print(tl.children)
-    sys.stdout.flush()
-    tf = tl.children['!frame'].children['!scrolledwindow']#.children['!scrolledentry']#.children['!frame']
-    print(tf.children)
-    sys.stdout.flush()
-    #return
-    #te = tf.children['!entry']
-    #te.grid(row=1, column=1)
-    #te.delete(0, tk.END)
-    #te.insert(tk.END, 'Hello')
-    #fname = 'C:\\Users\\Afifa Shareef\\Desktop\\UTSA Assignments\\Summer_2020\\UI_project\\OneDrive_1_7-6-2020\\Earthquake.csv'
-    #data = pd.read_csv(fname)
-    statistics = w.data.describe(include = 'all')
-    lstf = statistics.values.tolist() 
-    columnNames = []
-    for col in statistics:
-        columnNames.append(col)
-    rowNames = ['count','unique','top','frequency','mean','std','min','25%','50%','75%','max']
-    indx = indx = len(w.ents) -1;
-    for i in range(len(rowNames)):
-            indx = indx + 1
-            w.ents[indx] = ttk.Entry(inner_frame, width=20, font=('Arial',16,'bold'))
-            w.ents[indx].grid(row=i+9, column=0)
-            #te.delete(0, tk.END)
-            w.ents[indx].insert(tk.END, rowNames[i])
-    #indx = -1;
-    for j in range(len(columnNames)):
-            indx = indx + 1
-            w.ents[indx] = ttk.Entry(inner_frame, width=20, font=('Arial',16,'bold'))
-            w.ents[indx].grid(row=9, column=j+1)
-            #te.delete(0, tk.END)
-            w.ents[indx].insert(tk.END, columnNames[j])
-    #indx = -1;
-    for i in range(len(lstf)):
-        for j in range(len(lstf[0])):
-            indx = indx + 1
-            w.ents[indx] = ttk.Entry(inner_frame, width=20, font=('Arial',16,'bold'))
-            w.ents[indx].grid(row=i+9, column=j+1)
-            #te.delete(0, tk.END)
-            w.ents[indx].insert(tk.END, lstf[i][j])
-    w.ents[0].wait_visibility()
-    bbox = inner_frame.bbox()
-    w.Scrolledwindow1.configure(scrollregion=bbox)
+    stat_root = tk.Tk()
+    stat_root.geometry("800x300")
+    stat_root.resizable(False,False)
+
+    inner_frame2 = tk.Frame(stat_root,padx=10,pady=5)
+    inner_frame2.pack()
+    scrollbar_frame = tk.Frame(stat_root)
+    scrollbar_frame.pack(fill="x")
+    #inner_frame2 = w.Scrolledwindow1_f
+    #inner_frame2 = w.Frame2
+    df = w.data
+    desc= df.describe().loc[['count','min','mean','std','max']]
+    
+    inserL = []; 
+    statistics = ['Count','Minimum_Value','Average_Mean','Standard_Deviation','Maximum_Value']
+    for col in desc:
+        inserL.append(col)
+    lstf = desc.values.tolist() 
+    
+    tv = ttk.Treeview(inner_frame2, columns = list(range(1, len(inserL)+1)), show = "headings", height = "5")
+    
+    for i in range(len(inserL)):
+        tv.heading(i+1,text=inserL[i])
+        tv.column(i+1, width=80, minwidth=150)   
+      
+    for j in lstf:
+        tv.insert('','end',value= j)
+    
+    #scrollbar for y axis
+    xscrollbar = ttk.Scrollbar(scrollbar_frame, orient="horizontal", command = tv.xview)
+
+    tv1 = ttk.Treeview(inner_frame2, columns = (1), show = "headings", height = "5")
+    tv1.heading(1,text="Statistics")
+    
+    for j in statistics:
+        tv1.insert('','end',value=j)
+    
+    tv1.pack(side=LEFT)
+    tv.pack(side=LEFT) 
+    xscrollbar.pack(fill="x")
+    tv.configure(xscrollcommand =xscrollbar.set)
+    
+#def summarize(p1):
+#    inner_frame = w.Scrolledwindow1_f
+#    print('AlexTest2_support.readButtonPressed', type(p1))
+#    sys.stdout.flush()
+#    wid = p1.widget
+#    tl = wid.nametowidget(wid.winfo_parent())
+#    #tf = tl.nametowidget('TFrame1')
+#    print(tl.children)
+#    sys.stdout.flush()
+#    tf = tl.children['!frame'].children['!scrolledwindow']#.children['!scrolledentry']#.children['!frame']
+#    print(tf.children)
+#    sys.stdout.flush()
+#    #return
+#    #te = tf.children['!entry']
+#    #te.grid(row=1, column=1)
+#    #te.delete(0, tk.END)
+#    #te.insert(tk.END, 'Hello')
+#    #fname = 'C:\\Users\\Afifa Shareef\\Desktop\\UTSA Assignments\\Summer_2020\\UI_project\\OneDrive_1_7-6-2020\\Earthquake.csv'
+#    #data = pd.read_csv(fname)
+#    statistics = w.data.describe(include = 'all')
+#    lstf = statistics.values.tolist() 
+#    columnNames = []
+#    for col in statistics:
+#        columnNames.append(col)
+#    rowNames = ['count','unique','top','frequency','mean','std','min','25%','50%','75%','max']
+#    indx = indx = len(w.ents) -1;
+#    for i in range(len(rowNames)):
+#            indx = indx + 1
+#            w.ents[indx] = ttk.Entry(inner_frame, width=20, font=('Arial',16,'bold'))
+#            w.ents[indx].grid(row=i+9, column=0)
+#            #te.delete(0, tk.END)
+#            w.ents[indx].insert(tk.END, rowNames[i])
+#    #indx = -1;
+#    for j in range(len(columnNames)):
+#            indx = indx + 1
+#            w.ents[indx] = ttk.Entry(inner_frame, width=20, font=('Arial',16,'bold'))
+#            w.ents[indx].grid(row=9, column=j+1)
+#            #te.delete(0, tk.END)
+#            w.ents[indx].insert(tk.END, columnNames[j])
+#    #indx = -1;
+#    for i in range(len(lstf)):
+#        for j in range(len(lstf[0])):
+#            indx = indx + 1
+#            w.ents[indx] = ttk.Entry(inner_frame, width=20, font=('Arial',16,'bold'))
+#            w.ents[indx].grid(row=i+9, column=j+1)
+#            #te.delete(0, tk.END)
+#            w.ents[indx].insert(tk.END, lstf[i][j])
+#    w.ents[0].wait_visibility()
+#    bbox = inner_frame.bbox()
+#    w.Scrolledwindow1.configure(scrollregion=bbox)
+
+#func use: generate data for kmean
+def generateKmean():
+    global k_mean_list,combo1,combo2,entry1,canvas1,root3
+    k_mean_list = []
+    k_data = w.data
+    dataf = (k_data.select_dtypes(include=['number'], exclude=['object','datetime64','timedelta64','category']))
+    for col in dataf:
+        k_mean_list.append(col)
+        
+    cleaned_data = clean_dataset_for_kmean(dataf)
+
+    if (cleaned_data.empty):
+        tk.messagebox.showerror("Error", "Clustering cannot be perfomed: Null,NAN data present")
+        return
+    else:
+        root3 = tk.Tk()
+        root3.geometry("800x400")
+        canvas1 = tk.Canvas(root3, width=400, background='white')
+        canvas1.grid(row=0,column = 4)
+        
+        frame = tk.Frame(root3,width = 600)
+        frame.grid(row=0,column=0)
+        
+        label2 = tk.Label(frame, text='K-Mean')
+        label2.config(font=('helvetica', 10,'bold'))
+        label2.grid(row = 0, column = 0, padx=5, pady=5)
+        
+        choose_cl_label = tk.Label(frame, text='Choose Data Columns: ')
+        choose_cl_label.config(font=('helvetica', 8))
+        choose_cl_label.grid(row = 1, column = 0, padx=5, pady=5,sticky=W)
+        
+        combo1 = ttk.Combobox(frame, value = k_mean_list)
+        combo1.current(0)
+        combo1.bind("<<ComboboxSelected>>", )
+        combo1.grid(row = 2, column = 0, padx=5, pady=5)
+        
+        combo2 = ttk.Combobox(frame, value = k_mean_list)
+        combo2.current(0)
+        combo2.bind("<<ComboboxSelected>>")
+        combo2.grid(row = 3, column = 0, padx=5, pady=5)
+        
+        label2 = tk.Label(frame, text='Type Number of Clusters:')
+        label2.config(font=('helvetica', 8))
+        label2.grid(row = 4, column = 0, padx=5, pady=5)
+        
+        entry1 = tk.Entry (frame) 
+        entry1.grid(row = 5, column = 0, padx=5, pady=5)
+                
+        #generateButton = tk.Button(frame1, text = 'Export shapefile', command = lambda : exportShapeFile(geo_data,frame,frame1,root2))
+        generateButton = tk.Button(frame, text=" Process", command= lambda : computeKMean(cleaned_data,frame), bg='red', fg='white', font=('helvetica', 10, 'bold'))
+        generateButton.grid(row = 8, column = 0)
+
+#func use: compute k mean
+def computeKMean(data,frame):
+    global canvas1
+    canvas1.destroy()
+    global numberOfClusters
+    numberOfClusters = int(entry1.get())
+    var1 = combo1.get()
+    var2 = combo2.get()
+    data_c = pd.DataFrame()
+    data_c['X'] = data[var1]
+    data_c['Y'] = data[var2]
+    kmeans = KMeans(n_clusters=numberOfClusters)
+    kmeans.fit(data)
+    centroids = kmeans.cluster_centers_
+    labels = kmeans.labels_
+    
+    clustred_label = tk.Label(frame, text= "Cluster Labels: ")
+    clustred_label.grid(row=9, column = 0,padx=5, pady=5)
+    
+    label3 = tk.Label(frame, text= labels)
+    label3.grid(row=10, column = 0,padx=5, pady=5)
+    
+    canvas1 = tk.Canvas(root3, width=600, height=400, background='white')
+    canvas1.grid(row=0 , column=5)
+    
+    #plotting the clustered graph
+    figure1 = plt.Figure(figsize=(4,3), dpi=100)
+    figure1.clear()
+    ax1 = figure1.add_subplot(111)
+    ax1.scatter(data[var1], data[var2], c= kmeans.labels_.astype(float), s=20,  alpha=0.5)
+    ax1.scatter(centroids[:, 0], centroids[:, 1], c='red', s=50)
+    scatter1 = FigureCanvasTkAgg(figure1, canvas1) 
+    scatter1.get_tk_widget().pack(side=tk.RIGHT, fill=tk.BOTH)
+    
+
+#func use: clean data for k mean   
+def clean_dataset_for_kmean(df):
+    assert isinstance(df, pd.DataFrame)
+    df.dropna(inplace=True)
+    indices_to_keep = ~df.isin([np.nan, np.inf, -np.inf]).any(1)
+    return df[indices_to_keep].astype(np.float64)
+
 
 def get_columns_from(ent1,ent2,ret,frame,frame2,frame3):
     X_COLUMN = ent1.get()
