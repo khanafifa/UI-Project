@@ -675,6 +675,7 @@ def aboutButtonPressed(p1):
                     "Mark Dziuk\n"
                     "Afifa Khan\n"
                     "Francisco Perez\n"
+                    "Logo generously created by Kiera Fuller\n"
                     )
     lbl1.grid(row=0, sticky=tk.N)
     #img = tk.PhotoImage(data=open('HYDRA.png', encoding='ANSI').read(), format='png')
