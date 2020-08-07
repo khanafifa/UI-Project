@@ -11,7 +11,7 @@ import pandas as pd
 #needed for the arcGIS shapefile
 import geopandas as gpd
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from sklearn.cluster import KMeans
+#from sklearn.cluster import KMeans
 
 from tkinter import *
 
@@ -47,7 +47,9 @@ def init(top, gui, *args, **kwargs):
 
 X_COLUMN = ""
 Y_COLUMN = ""
+Z_RETURN = ""
 X_COLUMNY_COLUMN = []
+
 
 class MyDialog(simpledialog.Dialog):
 
@@ -573,11 +575,13 @@ def clean_dataset_for_kmean(df):
     return df[indices_to_keep].astype(np.float64)
 
 
-def get_columns_from(ent1,ent2,ret,frame,frame2,frame3):
+def get_columns_from(ent1,ent2,ent3,ret,frame,frame2,frame3):
     X_COLUMN = ent1.get()
     Y_COLUMN = ent2.get()
+    Z_RETURN = ent3.get()
     ret.append( X_COLUMN)
     ret.append(Y_COLUMN)
+    ret.append(Z_RETURN)
     
     frame.quit()
     
@@ -588,11 +592,11 @@ def checkWorkingMessage():
     else:
         closeWorkingMessage()
 
-def exportShapeFileWorker(geo_gdf, fname):
+def exportShapeFileWorker(geo_gdf, fname,crt_wkt):
     tic = time.perf_counter()
-    ESRI_WKT = 'PROJCS["NAD83_HARN_New_Mexico_West",GEOGCS["GCS_NAD83(HARN)",DATUM["D_North_American_1983_HARN",SPHEROID["GRS_1980",6378137,298.257222101]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",31],PARAMETER["central_meridian",-107.8333333333333],PARAMETER["scale_factor",0.999916667],PARAMETER["false_easting",830000],PARAMETER["false_northing",0],UNIT["Meter",1]]'
+    #ESRI_WKT = 'PROJCS["NAD83_HARN_New_Mexico_West",GEOGCS["GCS_NAD83(HARN)",DATUM["D_North_American_1983_HARN",SPHEROID["GRS_1980",6378137,298.257222101]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",31],PARAMETER["central_meridian",-107.8333333333333],PARAMETER["scale_factor",0.999916667],PARAMETER["false_easting",830000],PARAMETER["false_northing",0],UNIT["Meter",1]]'
 #needs to incorporate projection file. epsg code or WKT well known text code espg.io
-    geo_gdf.to_file(filename=fname, driver = 'ESRI Shapefile', crs_wkt = ESRI_WKT )
+    geo_gdf.to_file(filename=fname, driver = 'ESRI Shapefile', crs_wkt = crt_wkt )
     toc = time.perf_counter()
     #closeWorkingMessage()
     w.thread_message='File {} saved.\nElapsed Time (seconds) {}'.format(fname, toc - tic)
@@ -640,15 +644,22 @@ def exportShapeFile(geo_data , frame,frame1,root2):
     entlab2.grid(row=4,column=0)
     ent2 = Entry(frame3)
     ent2.grid(row=5,column=0)
-    bttn = tk.Button(frame3, text = 'Enter', command = lambda : get_columns_from(ent1,ent2,X_COLUMNY_COLUMN,frame,frame2,frame3)) 
+    entlab3= Label(frame3, text = "please enter the Coordinate reference system if needed")
+    entlab3.grid(row=7,column=0)
+    ent3 = Entry(frame3)
+    
+    ent3.grid(row=8,column=0)
+    bttn = tk.Button(frame3, text = 'Enter', command = lambda : get_columns_from(ent1,ent2,ent3,X_COLUMNY_COLUMN,frame,frame2,frame3)) 
     bttn.grid(row = 6,column = 0)
     frame.mainloop()
     latHold = int(X_COLUMNY_COLUMN[1])
-    print(latHold);
+    print(latHold)
+    #string for the well known text as read in
+    crt_wkt = X_COLUMNY_COLUMN[2]
     latHold = latHold - 1
     longHold = int(X_COLUMNY_COLUMN[0])
     longHold = longHold - 1   
-    geo_gdf = gpd.GeoDataFrame(geo_data, geometry = gpd.points_from_xy(geo_data.iloc[:,latHold].astype('float32'),geo_data.iloc[:,longHold].astype('float32')))
+    geo_gdf = gpd.GeoDataFrame(geo_data, geometry = gpd.points_from_xy(geo_data.iloc[:,latHold].astype(float),geo_data.iloc[:,longHold].astype(float)))
    
    # scale = Scale(frame, label = "dataset brief",from = 0, to = 100, command = getValue, orient="horizontal" )
     #scale.pack(fill = "x")
@@ -656,7 +667,7 @@ def exportShapeFile(geo_data , frame,frame1,root2):
     
     
     file_save = tk.filedialog.asksaveasfilename(initialdir = '/')
-    w.thread = threading.Thread(target=exportShapeFileWorker, args=(geo_gdf, file_save))
+    w.thread = threading.Thread(target=exportShapeFileWorker, args=(geo_gdf, file_save,crt_wkt))
     w.thread.daemon = True # Allow the program to terminate without waiting for the thread to finish.
    
     #showWorking()
