@@ -87,7 +87,7 @@ class Toplevel1:
         self.TButton1.place(relx=0.017, rely=0.025, height=25, width=76)
         self.TButton1.configure(command=AlexTest2_support.bob)
         self.TButton1.configure(takefocus="")
-        self.TButton1.configure(text='''Read Test''')
+        self.TButton1.configure(text='''Read''')
         self.TButton1.bind('<Button-1>',lambda e:AlexTest2_support.readButtonPressed(e))
 
         self.Scrolledwindow1 = ScrolledWindow(self.Frame1)
