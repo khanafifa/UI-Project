@@ -50,7 +50,9 @@ Y_COLUMN = ""
 Z_RETURN = ""
 X_COLUMNY_COLUMN = []
 
-
+"""
+As as the dialog for setting import options
+"""
 class MyDialog(simpledialog.Dialog):
 
     """def body(self, master):
@@ -118,9 +120,6 @@ class MyDialog(simpledialog.Dialog):
         self.e1 = tk.Entry(master)
         self.e2 = tk.Entry(master)
         self.e1.insert(0, ',')
-
-        #self.e1.grid(row=0, column=1)
-        #self.e2.grid(row=1, column=1)
         
         self.lbl3 = tk.Label(master, text="Sheet:")
         self.lbl4 = tk.Label(master, text="Columns:")
@@ -132,7 +131,7 @@ class MyDialog(simpledialog.Dialog):
         self.cb = tk.Checkbutton(master, text="Header", variable=self.headerVar)
         self.cb.grid(row=2, columnspan=2, sticky=tk.W)
         self.var = tk.IntVar()
-        tk.Radiobutton(master, text="Deliminated Text", variable=self.var, value=1, command=self.sel).grid(row=10, column=0, sticky=tk.W)
+        tk.Radiobutton(master, text="Delimited Text", variable=self.var, value=1, command=self.sel).grid(row=10, column=0, sticky=tk.W)
         tk.Radiobutton(master, text="Excel", variable=self.var, value=2, command=self.sel).grid(row=10, column=1, sticky=tk.W)
 
         self.cb1Var = tk.IntVar()        
@@ -174,10 +173,10 @@ class MyDialog(simpledialog.Dialog):
 
 
 
-
-
-
-
+"""
+Description:  displays a certain number of rows so the user can be sure the import is working as intended
+Args: p1 the event which triggered the function
+"""
 def previewTable(p1):
     MaxRows = 5
     inner_frame = w.Scrolledwindow1_f
@@ -217,7 +216,9 @@ def previewTable(p1):
     w.Scrolledwindow1.configure(scrollregion=bbox)
     root.update()
 
-
+"""
+Description: shows the data size and shape of the imported data in entries below the preview rows
+"""
 def showDataSize():
     inner_frame = w.Scrolledwindow1_f
     indx = len(w.ents)
@@ -233,6 +234,9 @@ def showDataSize():
     w.ents[indx].grid(row=8, column=0)
     w.ents[indx].insert(tk.END, 'Entries = {}'.format(w.data.size))
 
+"""
+Closes as the buffer message window after a potentially long task completes
+"""
 def closeWorkingMessage():
     if w.ft != None:
         w.ft.destroy()
@@ -240,28 +244,50 @@ def closeWorkingMessage():
         if w.thread_message:
             tk.messagebox.showinfo("Information", w.thread_message)
             w.thread_message = None
-
+"""
+Description: imports data from a delimited text file (csv is the most common)
+Args:
+    p1 the event that called the function
+    fname (str) the name of the file to import
+    sep (str) the delimiter
+    com (str) the character indicating comments in the file
+    head (int) the line that contains the header information (column names)
+"""
 def readCSV(p1, fname, sep, com, head):
     tic = time.perf_counter()
     w.data = pd.read_csv(fname, sep=sep, comment=com, header = head)
     toc = time.perf_counter()
     showDataSize()
-    #closeWorkingMessage()
     w.thread_message='Elapsed Time (seconds) {}'.format(toc - tic)
-    
+
+"""
+Description: imports data from an excel file
+Args:
+    p1 the event that called the function
+    fname (str) the name of the file to import
+    sheet (str) the excel sheet to read
+    cols (str) the column range
+    head (int) the line that contains the header information (column names)
+    numrows (int) the number of rows to read
+"""
 def readExcel(p1, fname, sheets, cols, head, numrows):
     tic = time.perf_counter()
     w.data = pd.read_excel(fname, sheet_name=sheets, usecols=cols, nrows = numrows, header = head)
     toc = time.perf_counter()
     showDataSize()
-    #closeWorkingMessage()
     w.thread_message='Elapsed Time (seconds) {}'.format(toc - tic)
 
+"""
+Description: can be used to prevent a window closing from users
+"""
 def on_closing():
     return
     if tk.messagebox.askokcancel("Quit", "Do you want to quit?"):
         root.destroy()
 
+"""
+Description: shows the still working message durring long tasks
+"""
 def showWorking():
     w.ft = tk.Toplevel(w.Frame1)
     w.ft.title('Work in progress, please be patient...')
@@ -274,6 +300,9 @@ def showWorking():
     w.ft.grab_set()
     root.update()
 
+"""
+Description: presents import options after read button is pressed
+"""
 def readButtonPressed(p1):
     MaxRows = 5
     inner_frame = w.Scrolledwindow1_f
@@ -312,8 +341,6 @@ def readButtonPressed(p1):
             return
         
         
-        #readCSV(p1, fname, sep, com, head)
-        
         w.thread = threading.Thread(target=readCSV, args=(p1, fname, sep, com, head))
         w.thread.daemon = True # Allow the program to terminate without waiting for the thread to finish.
         w.thread.start()
@@ -346,7 +373,6 @@ def readButtonPressed(p1):
             return
         
 
-        #readExcel(p1, fname, sheets, cols, head, numrows)
         w.thread = threading.Thread(target=readExcel, args=(p1, fname, sheets, cols, head, numrows))
         w.thread.daemon = True # Allow the program to terminate without waiting for the thread to finish.
         w.thread.start()
@@ -359,11 +385,16 @@ def readButtonPressed(p1):
         return
     
 
-
+"""
+A do nothing function, useful durring development
+"""
 def bob():
     print('AlexTest2_support.{}')
     sys.stdout.flush()
 
+"""
+Description clears the data display table
+"""
 def clearTable(p1):
     print('AlexTest2_support.clearTable')
     sys.stdout.flush()
@@ -381,9 +412,7 @@ def destroy_window():
     top_level.destroy()
     top_level = None
 
-if __name__ == '__main__':
-    import AlexTest2
-    AlexTest2.vp_start_gui()
+
     
 #function use : calculate the statistics 
 def summarize(p1):
@@ -395,8 +424,6 @@ def summarize(p1):
     inner_frame2.pack()
     scrollbar_frame = tk.Frame(stat_root)
     scrollbar_frame.pack(fill="x")
-    #inner_frame2 = w.Scrolledwindow1_f
-    #inner_frame2 = w.Frame2
     df = w.data
     desc= df.describe().loc[['count','min','mean','std','max']]
     
@@ -428,7 +455,8 @@ def summarize(p1):
     tv.pack(side=LEFT) 
     xscrollbar.pack(fill="x")
     tv.configure(xscrollcommand =xscrollbar.set)
-    
+
+#old summarize function, some ideas could still be useful
 #def summarize(p1):
 #    inner_frame = w.Scrolledwindow1_f
 #    print('AlexTest2_support.readButtonPressed', type(p1))
@@ -574,7 +602,9 @@ def clean_dataset_for_kmean(df):
     indices_to_keep = ~df.isin([np.nan, np.inf, -np.inf]).any(1)
     return df[indices_to_keep].astype(np.float64)
 
-
+"""
+Description: Helper function gets column names and closes a window
+"""
 def get_columns_from(ent1,ent2,ent3,ret,frame,frame2,frame3):
     X_COLUMN = ent1.get()
     Y_COLUMN = ent2.get()
@@ -585,27 +615,41 @@ def get_columns_from(ent1,ent2,ent3,ret,frame,frame2,frame3):
     
     frame.quit()
     
-
+"""
+Description: will periodically check if the thread is still processing and close the progress window
+"""
 def checkWorkingMessage():
     if w.thread.isAlive():
         root.after(100, checkWorkingMessage)
     else:
         closeWorkingMessage()
 
+"""
+Description: exports data to a shape file, meant to be useable in a thread
+Args:
+    geo_gdf (GeoDataFrame) the data to export
+    fname (str) the directory where to export the files
+    crt_wkt (str) export option for the GeoDataFrame.to_file function
+"""
 def exportShapeFileWorker(geo_gdf, fname,crt_wkt):
     tic = time.perf_counter()
     #ESRI_WKT = 'PROJCS["NAD83_HARN_New_Mexico_West",GEOGCS["GCS_NAD83(HARN)",DATUM["D_North_American_1983_HARN",SPHEROID["GRS_1980",6378137,298.257222101]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",31],PARAMETER["central_meridian",-107.8333333333333],PARAMETER["scale_factor",0.999916667],PARAMETER["false_easting",830000],PARAMETER["false_northing",0],UNIT["Meter",1]]'
 #needs to incorporate projection file. epsg code or WKT well known text code espg.io
     geo_gdf.to_file(filename=fname, driver = 'ESRI Shapefile', crs_wkt = crt_wkt )
     toc = time.perf_counter()
-    #closeWorkingMessage()
     w.thread_message='File {} saved.\nElapsed Time (seconds) {}'.format(fname, toc - tic)
 
-def exportShapeFile(geo_data , frame,frame1,root2):
+"""
+Description: exports the data as shape files
+Args:
+    geo_data (DataFrame) the data to export
+    frame the outer frame of export options
+    frame2 the inner frame of export otions
+    root2 the root of the export frame
+"""
+def exportShapeFile(geo_data, frame,frame1,root2):
 #creates a geoDataFrome from the DataFrame. the column names are specific to SWNewMexico BHT Geothermal data. need to find a way to automate selecting columns
 #have the user select cross refference lookup table not all datasets will have headers so having set variables will be more secure
-    #frame1.destroy()
-    #frame.geometry("600x400")
     
     frame.geometry("%dx%d%+d%+d" % (700, 800, 250, 125))
     frame2 = Frame(frame)
@@ -670,24 +714,34 @@ def exportShapeFile(geo_data , frame,frame1,root2):
     w.thread = threading.Thread(target=exportShapeFileWorker, args=(geo_gdf, file_save,crt_wkt))
     w.thread.daemon = True # Allow the program to terminate without waiting for the thread to finish.
    
-    #showWorking()
-    frame2.destroy()#quit()
-    frame3.destroy()#quit()
-    #root2.quit()
+    frame2.destroy()
+    frame3.destroy()
     showWorking()
     w.thread.start()
     print("Made it here!!")
     checkWorkingMessage()
     
     
-
+"""
+Description: does the work of exporting the data into a csv file, usually in a thread
+Args:
+    data (DataFrame) the data to export
+    fname (str) the name of the file to write
+"""
 def exportCSVWorker(data, fname):
     tic = time.perf_counter()
     data.to_csv(fname)
     toc = time.perf_counter()
     #closeWorkingMessage()
     w.thread_message='File {} saved.\nElapsed Time (seconds) {}'.format(fname, toc - tic)
-    
+"""
+Description: calls the exportJSONWorker to export the data as a JSON file
+Args:
+    data (DataFrame) the data to export
+    frame the outer frame of export options
+    frame2 the inner frame of export otions
+    root2 the root of the export frame
+"""    
 def exportCSV(data,frame,frame1,root2):
     file_save = filedialog.asksaveasfilename(initialdir = '/', filetypes = (("CSV files","*.csv"),("All Files","*.*")))
     w.thread = threading.Thread(target=exportCSVWorker, args=(data, file_save+".csv"))
@@ -696,14 +750,26 @@ def exportCSV(data,frame,frame1,root2):
     showWorking()
     checkWorkingMessage()
 
+"""
+Description: does the work of exporting the data into a JSON file, usually in a thread
+Args:
+    data (DataFrame) the data to export
+    fname (str) the name of the file to write
+"""
 def exportJSONWorker(data, fname):
     tic = time.perf_counter()
     data.to_json(fname+".json")
     toc = time.perf_counter()
-    #closeWorkingMessage()
     w.thread_message = 'File {} saved.\nElapsed Time (seconds) {}'.format(fname+".json", toc - tic)
             
-            
+"""
+Description: calls the exportJSONWorker to export the data as a JSON file
+Args:
+    data (DataFrame) the data to export
+    frame the outer frame of export options
+    frame2 the inner frame of export otions
+    root2 the root of the export frame
+"""
 def exportJSON(data,frame,frame1,root2):
     file_save = filedialog.asksaveasfilename(initialdir = '/', filetypes = (('JSON files','*.json'),('All Files','*.*')))
     w.thread = threading.Thread(target=exportJSONWorker, args=(data, file_save))
@@ -712,7 +778,9 @@ def exportJSON(data,frame,frame1,root2):
     showWorking()
     checkWorkingMessage()
 
-        
+"""
+Description: displays export options when the export button is pressed
+"""
 def exportSelect():
     if type(w.data) == type(None) or w.data.size == 0:
         tk.messagebox.showwarning("Warning", "Please import data before trying to export.")
@@ -748,7 +816,9 @@ def exportSelect():
     btn3.pack(side = BOTTOM, pady = 20)
 
     
-    
+"""
+Description: graphs selected columns
+"""    
 def graphSelected(): 
     r = tk.Tk()
     r.geometry("650x650")
@@ -832,7 +902,10 @@ def plotData():
     root.mainloop()
     
 
-
+"""
+Description: Displays the about information
+Args: p1 the event that triggered the function
+"""
 def aboutButtonPressed(p1):
     aboutTop = tk.Toplevel(root,width=800, height=600)
     #frame.pack_propagate(0)
@@ -860,9 +933,13 @@ def aboutButtonPressed(p1):
     
     
     
+"""
+This snippet will start the gui if this file is called as main
+"""    
     
-    
-    
+if __name__ == '__main__':
+    import AlexTest2
+    AlexTest2.vp_start_gui()    
     
     
     
